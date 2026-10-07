@@ -8,7 +8,7 @@ export const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const require = createRequire(import.meta.url);
 export const npmCli = () => {
   const path = process.env.npm_execpath;
-  if (!path || !existsSync(path)) throw new Error('Run this command with npm run, as documented in README.md.');
+  if (!path || !existsSync(path)) throw new Error('Run this command through npm run, for example npm run demo.');
   return path;
 };
 export const firebaseCli = () => {
