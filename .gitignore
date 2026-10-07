@@ -1,0 +1,48 @@
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+functions/.secret.local
+functions/.env*
+*.pem
+*.key
+*service-account*.json
+*serviceAccount*.json
+
+# Dependencies and generated output
+node_modules/
+dist/
+dist-ssr/
+.firebase/
+.cache/
+.vite/
+.pytest_cache/
+.pytest-tmp/
+*.log
+*.local
+coverage/
+playwright-report/
+test-results/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+models/saved_model/
+models/cherry_binary_savedmodel/
+models/cherry_multiclass_savedmodel/
+models/*.onnx
+model_raw/
+forecasting/private/
+forecasting/runs/
+forecasting/artifacts/
+# Curated, explicitly synthetic examples in forecasting/samples stay tracked.
+
+# Local/editor files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*
+*.tmp
+tmp/
+output/

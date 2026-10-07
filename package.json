@@ -1,0 +1,53 @@
+{
+  "name": "sweetcherry-platform-agri",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/fingerprint-edge-model.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/fingerprint-edge-model.mjs",
+    "build": "vite build",
+    "test": "node --test tests/*.test.mjs src/utils/__tests__/*.test.mjs",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "setup": "node scripts/setup.mjs",
+    "demo": "node scripts/demo.mjs",
+    "test:rules": "node scripts/test-rules.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "check:history": "node scripts/check-secrets.mjs --history",
+    "validate": "npm run lint && npm test && npm run build && npm run check:secrets"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.5.0",
+    "mapbox-gl": "^3.16.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "recharts": "^3.8.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "tailwindcss": "^4.2.1",
+    "vite": "^7.1.7"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.5"
+  }
+}

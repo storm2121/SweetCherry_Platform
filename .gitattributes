@@ -1,0 +1,4 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+# Preserve exact model bytes used by the SHA-256 artifact fingerprint.
+public/models/** -text

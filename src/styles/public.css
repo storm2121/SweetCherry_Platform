@@ -1,0 +1,77 @@
+/* Shared base for the signed-out pages, plus the sign-in and registration
+   screens. The landing page adds landing.css. */
+.sc-public { color: #1c302c; background: #fff; font-family: 'IBM Plex Sans Arabic', 'Cairo', sans-serif; line-height: 1.75; text-align: start; }
+.sc-public:is([lang="fr"], [lang="en"]) { font-family: 'IBM Plex Sans', 'IBM Plex Sans Arabic', sans-serif; }
+/* globals.css sets the whole app right-to-left; undo that for French and English. */
+.sc-public[dir="ltr"] :is(input, textarea, select, button) { direction: ltr; }
+.sc-public a { color: inherit; }
+.sc-public button, .sc-public input, .sc-public select { font: inherit; }
+.sc-public h1, .sc-public h2, .sc-public h3, .sc-public p, .sc-public figure { margin: 0; }
+.sc-public h1, .sc-public h2, .sc-public h3 { font-weight: 600; }
+.sc-public a:focus-visible, .sc-public button:focus-visible, .sc-public input:focus-visible, .sc-public select:focus-visible { outline: 3px solid #823446; outline-offset: 4px; }
+.sc-brand-link { text-decoration: none; }
+.sc-lang-switch { display: inline-flex; flex-shrink: 0; border: 1px solid #c3cdc8; border-radius: 4px; overflow: hidden; }
+.sc-lang-switch button { border: 0; background: #fff; color: #55645f; font: inherit; font-size: 13px; line-height: 1.5; padding: 5px 10px; cursor: pointer; }
+.sc-lang-switch button + button { border-inline-start: 1px solid #c3cdc8; }
+.sc-lang-switch button:hover { color: #1c302c; }
+.sc-lang-switch button[aria-pressed="true"] { background: #1c302c; color: #fff; }
+.sc-lang-switch button:lang(ar) { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+.sc-lang-switch__short { display: none; }
+@media (max-width: 760px) {
+  .sc-lang-switch__long { display: none; }
+  .sc-lang-switch__short { display: inline; }
+  .sc-lang-switch button { padding: 5px 9px; }
+}
+.sc-kicker { color: #697a72; font-size: 12px; font-weight: 500; letter-spacing: .02em; }
+.sc-button { background: #823446; color: #fff !important; padding: 13px 24px; border: 1px solid #823446; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 20px; cursor: pointer; font-size: 14px; font-weight: 500; min-height: 48px; text-decoration: none; transition: background .15s; }
+.sc-button:hover { background: #672538; }
+.sc-button:disabled { opacity: .55; cursor: wait; }
+.sc-text-link { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; text-decoration: underline; text-underline-offset: 6px; }
+.sc-public[dir="ltr"] .sc-button svg, .sc-public[dir="ltr"] .sc-text-link:not(.sc-back-link) svg { transform: rotate(180deg); }
+.sc-public[dir="rtl"] .sc-back-link svg { transform: rotate(180deg); }
+
+.sc-auth { min-height: 100dvh; }
+.sc-auth-header { max-width: 1260px; padding: 29px 40px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #e4e8e5; }
+.sc-auth-header__actions { display: flex; align-items: center; gap: 24px; }
+.sc-auth-checking { color: #55645f; font-size: 14px; }
+.sc-auth-paused h2 { font-size: 24px; }
+.sc-auth-paused p { margin-top: 10px; color: #34463f; font-size: 15px; }
+.sc-auth-form .sc-auth-paused .sc-button { margin-top: 24px; }
+.sc-auth-layout { display: grid; grid-template-columns: 1fr 1fr; max-width: 1040px; margin: 60px auto; align-items: start; gap: 90px; padding: 0 32px; }
+.sc-auth-context { padding: 35px 0; }
+.sc-auth-context h1 { font-size: 36px; line-height: 1.55; letter-spacing: -.5px; margin-top: 15px; }
+.sc-auth-context > p:not(.sc-kicker) { color: #55645f; font-size: 15px; margin-top: 20px; }
+.sc-auth-context-line { display: flex; gap: 10px; align-items: center; border-block: 1px solid #e4e8e5; padding-block: 22px; margin-top: 40px; font-size: 13px; }
+.sc-auth-form { padding: 30px 34px; border: 1px solid #d9e2dd; border-radius: 6px; }
+.sc-auth-form-heading h2 { font-size: 27px; margin-top: 7px; }
+.sc-auth-form-heading > p:last-child { color: #697a72; font-size: 13px; margin-top: 7px; }
+.sc-auth-form form { margin-top: 27px; display: flex; flex-direction: column; gap: 19px; }
+.sc-auth-form form > label { display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: #263d36; }
+.sc-auth-form input:not([type="radio"]), .sc-auth-form select { display: block; width: 100%; border: 1px solid #becac3; border-radius: 3px; padding: 10px 12px; background: #fff; color: #263d36; min-height: 46px; font-size: 16px; }
+.sc-auth-form input[type="file"] { font-size: 12px; }
+.sc-auth-form small { color: #697a72; font-size: 12px; line-height: 1.7; }
+.sc-auth-form .sc-button { width: 100%; margin-top: 3px; }
+.sc-auth-switch { border-top: 1px solid #e4e8e5; margin-top: 25px !important; padding-top: 19px; font-size: 13px; color: #697a72; }
+.sc-auth-switch a { color: #823446; font-weight: 500; margin-inline-start: 8px; text-decoration: underline; text-underline-offset: 3px; }
+.sc-role { margin: 22px 0 0; border: 0; padding: 0; display: flex; gap: 10px; }
+.sc-role legend { font-size: 12px; margin-bottom: 8px; }
+.sc-role label { display: flex; gap: 8px; align-items: center; flex: 1; border: 1px solid #becac3; padding: 10px; border-radius: 3px; font-size: 13px; cursor: pointer; }
+.sc-role label:has(input:checked) { border-color: #823446; color: #823446; background: #fbf7f8; }
+.sc-role input { accent-color: #823446; }
+.sc-form-error { font-size: 13px; padding: 12px; color: #953329; border: 1px solid #e9cdd2; border-radius: 6px; background: #fff4f1; }
+.sc-auth-footer { text-align: center; padding: 25px; font-size: 12px; color: #697a72; border-top: 1px solid #e4e8e5; }
+.sc-loading { min-height: 100dvh; display: grid; place-items: center; background: #fff; color: #55645f; font-size: 14px; }
+
+@media (max-width: 1000px) { .sc-auth-layout { gap: 45px; } .sc-auth-context h1 { font-size: 32px; } }
+@media (max-width: 760px) {
+  .sc-auth-header { padding: 20px 16px; }
+  .sc-auth-header .sc-text-link { display: none; }
+  .sc-auth-header .sc-brand small { display: none; }
+  .sc-auth-layout { grid-template-columns: 1fr; gap: 24px; padding-inline: 16px; margin-block: 25px 40px; max-width: 520px; }
+  .sc-auth-context { padding: 6px 0; }
+  .sc-auth-context h1 { font-size: 27px; line-height: 1.6; }
+  .sc-auth-context > p:not(.sc-kicker) { margin-top: 12px; font-size: 14px; }
+  .sc-auth-context-line { display: none; }
+  .sc-auth-form { padding: 24px 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .sc-public * { scroll-behavior: auto; transition: none; } }

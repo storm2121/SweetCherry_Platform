@@ -1,0 +1,33 @@
+{
+  "fingerprint": "3792ce4ca7b9ea3de12b8b45b7fbbe034b268dac1e43990c0feddd7c2b38df77",
+  "manifestSha256": "40a49b08e2dfed88eb48d03899a002366cbbc6a206c6d87d62e75612e7044de5",
+  "labelsSha256": "10058c33bedaf7130cc445108c25b8c695dad0cc44fdf09e7d398d45420a5a2a",
+  "classCount": 6,
+  "inputShape": [
+    1,
+    224,
+    224,
+    3
+  ],
+  "source": "bundled",
+  "labels": {
+    "0": "نبتة كرز سليمة",
+    "1": "كرز مصاب بالبياض الدقيقي",
+    "2": "كرز مصاب بالتبقع البني",
+    "3": "كرز مصاب بحرق الأوراق",
+    "4": "كرز مصاب بالتبقع الأرجواني",
+    "5": "كرز مصاب بمرض ثقب الرصاص"
+  },
+  "shards": [
+    {
+      "path": "group1-shard1of2.bin",
+      "bytes": 4194304,
+      "sha256": "dce20bcf6a6c97a35b71e7325a73b4186f5137f5fabdda5c23b043e8b75224f1"
+    },
+    {
+      "path": "group1-shard2of2.bin",
+      "bytes": 548952,
+      "sha256": "4d8f67bb495b8e6306e594a035c069766b8cf2437f564435a095b6f8682711b8"
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+rules_version = '2';
+
+// SweetCherry Cloud Storage rules.
+//
+// These rules cover client SDK access only. Cloud Functions use the Admin SDK
+// and are not subject to them. Roles are read from Firestore users/{uid}, the
+// same source as firestore.rules. Tests: tests/rules.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function hasProfile() {
+      return signedIn() && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function profile() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return hasProfile() && profile().role == 'admin';
+    }
+
+    function isFarmer() {
+      return hasProfile() && profile().role == 'farmer';
+    }
+
+    function isApprovedExpert() {
+      return hasProfile() && profile().role == 'expert' && profile().status == 'approved';
+    }
+
+    function isStaff() {
+      return isApprovedExpert() || isAdmin();
+    }
+
+    function isMember() {
+      return isFarmer() || isStaff();
+    }
+
+    function underMb(mb) {
+      return request.resource.size < mb * 1024 * 1024;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.+');
+    }
+
+    function isAudio() {
+      return request.resource.contentType.matches('audio/.+');
+    }
+
+    // Photos up to 20 MB, voice notes up to 5 MB (about ten minutes).
+    function isMessageMedia() {
+      return (isImage() && underMb(20)) || (isAudio() && underMb(5));
+    }
+
+    function isConversationParticipant(conversationId) {
+      let c = firestore.get(/databases/(default)/documents/expertConversations/$(conversationId)).data;
+      return signedIn() && (c.farmerId == request.auth.uid || c.expertId == request.auth.uid);
+    }
+
+    // Registration switch kept in Firestore (settings/registration).
+    function registrationOpen() {
+      let setting = /databases/(default)/documents/settings/registration;
+      return firestore.exists(setting) && firestore.get(setting).data.open == true;
+    }
+
+    // Expert credential, uploaded during registration before the profile exists.
+    match /expertProofs/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId)
+        && registrationOpen()
+        && underMb(10)
+        && (isImage() || request.resource.contentType in [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+      allow update, delete: if false;
+    }
+
+    match /pricePosts/{userId}/{fileName} {
+      allow read: if isMember();
+      allow create: if isOwner(userId) && isFarmer() && isImage() && underMb(20);
+      allow update, delete: if false;
+    }
+
+    match /farmerChat/{userId}/{fileName} {
+      allow read: if isMember();
+      allow create: if isOwner(userId) && isMember() && isMessageMedia();
+      allow update, delete: if false;
+    }
+
+    match /farmerMessages/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isStaff();
+      allow create: if isOwner(userId) && isFarmer() && isMessageMedia();
+      allow update, delete: if false;
+    }
+
+    // Diagnosis photos are resized to JPEG in the browser before upload.
+    match /visionDiagnoses/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isStaff();
+      allow create: if isOwner(userId)
+        && isFarmer()
+        && request.resource.contentType == 'image/jpeg'
+        && underMb(20);
+      allow update, delete: if false;
+    }
+
+    // Media a farmer attaches to a question for the experts.
+    match /expertRequests/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isStaff();
+      allow create: if isOwner(userId) && isFarmer() && isMessageMedia();
+      allow update, delete: if false;
+    }
+
+    // Media an expert attaches to the first reply, uploaded before the claim.
+    match /expertPendingReplies/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isApprovedExpert() && isMessageMedia();
+      allow update, delete: if false;
+    }
+
+    // Media sent inside a farmer-expert conversation.
+    match /expertConversations/{conversationId}/{userId}/{fileName} {
+      allow read: if isAdmin() || isConversationParticipant(conversationId);
+      allow create: if isOwner(userId)
+        && isConversationParticipant(conversationId)
+        && isMessageMedia();
+      allow update, delete: if false;
+    }
+
+    // Hydroponics photos; device ids are device_<ownerUid>.
+    match /hydroVision/{deviceId}/{fileName} {
+      allow read: if (signedIn() && deviceId == 'device_' + request.auth.uid) || isAdmin();
+      allow create: if signedIn()
+        && deviceId == 'device_' + request.auth.uid
+        && isImage()
+        && underMb(10);
+      allow update, delete: if false;
+    }
+
+    // Written by Cloud Functions.
+    match /climate/{allPaths=**} {
+      allow read: if isMember();
+      allow write: if false;
+    }
+
+    match /tts/{fileName} {
+      allow read: if isMember();
+      allow write: if false;
+    }
+
+    // Everything else (datasets, model artifacts) is reached through the Admin
+    // SDK and stays closed to clients.
+  }
+}

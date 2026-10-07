@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #F7F9F8;
+  --color-foreground: #1C302C;
+  --color-primary: #823446;
+  --color-primary-fg: #FFFFFF;
+  --color-secondary: #567761;
+  --color-secondary-fg: #FFFFFF;
+  --color-accent: #EDF3EF;
+  --color-accent-fg: #365447;
+  --color-muted: #F1F5F2;
+  --color-muted-fg: #697A72;
+  --color-border: #D9E2DD;
+  --color-destructive: #A85448;
+  --color-card: #FFFFFF;
+  --color-moss-soft: rgba(93, 112, 82, 0.1);
+
+  --shadow-soft: 0 2px 8px rgba(28, 48, 44, 0.04);
+  --shadow-float: 0 8px 24px rgba(28, 48, 44, 0.08);
+
+  --font-heading: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+  --font-body: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: #F7F9F8;
+  font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+  color: #1C302C;
+  direction: rtl;
+  line-height: 1.6;
+}
+
+#root {
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+}
+
+input,
+textarea,
+button,
+select {
+  font-family: inherit;
+  direction: rtl;
+}
+
+:where(button, a, input, textarea, select):focus-visible { outline: 2px solid #823446; outline-offset: 3px; }
+:where(button) { touch-action: manipulation; }
+[dir="ltr"] input, input[dir="ltr"] { direction: ltr; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+/* TTS highlight — toggled by JS */
+.tts-highlight {
+  outline: 3px solid #C18C5D;
+  box-shadow: 0 0 12px rgba(193, 140, 93, 0.45);
+  background-color: rgba(193, 140, 93, 0.12);
+  transition: outline-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+/* Chart classes used by SVG */
+.chart-axis {
+  stroke: #DED8CF;
+  stroke-width: 0.8;
+}
+
+.chart-grid {
+  stroke: rgba(0, 0, 0, 0.08);
+  stroke-width: 0.5;
+}
+
+.chart-axis-text {
+  fill: #78786C;
+  font-size: 0.3rem;
+}
+
+/* Hydroponic dashboard pulse animation */
+@keyframes hydro-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.animate-pulse {
+  animation: hydro-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Price average table */
+.price-average-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.price-average-table th,
+.price-average-table td {
+  border: 1px solid #DED8CF;
+  padding: 0.6rem;
+}
+
+.price-average-table th {
+  background: rgba(93, 112, 82, 0.1);
+  font-weight: 600;
+  font-family: 'Nunito', 'Cairo', sans-serif;
+}

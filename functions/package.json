@@ -1,0 +1,27 @@
+{
+  "name": "sweetcherry-functions",
+  "type": "module",
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "scripts": {
+    "dataset:dry-run": "node scripts/prepareLegacyLeafDatasetImport.mjs --dry-run",
+    "dataset:upload": "node scripts/prepareLegacyLeafDatasetImport.mjs --upload",
+    "training:export": "node scripts/exportTrainingSetManifest.mjs",
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "test": "node --test ../tests/climateMetrics.test.mjs ../tests/dataState.test.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0",
+    "firebase-functions": "^7.4.0",
+    "openai": "^6.8.1"
+  },
+  "overrides": {
+    "gaxios": {
+      "uuid": "^11.1.1"
+    }
+  }
+}

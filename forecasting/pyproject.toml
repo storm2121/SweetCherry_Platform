@@ -1,0 +1,11 @@
+[project]
+name = "sweetcherry-forecasting"
+version = "1.0.0"
+description = "Simulated cherry market data and 1-8 week price-range forecasts for SweetCherry"
+requires-python = ">=3.11"
+dependencies = ["lightgbm>=4.5", "numpy>=2.0", "openpyxl>=3.1", "pandas>=2.2", "scipy>=1.11"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"

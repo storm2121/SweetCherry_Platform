@@ -1,0 +1,5 @@
+/* SweetCherry wordmark; imported by Brand.jsx so every page that shows it gets it. */
+.sc-brand { display: inline-flex; align-items: center; gap: 11px; color: #823446; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 23px; line-height: 1.1; letter-spacing: -.6px; }
+.sc-brand svg { flex-shrink: 0; }
+.sc-brand small { display: block; font: 400 10px/1.7 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif; letter-spacing: 0; margin-top: 5px; color: #55645f; text-align: start; }
+.sc-brand--inverse { color: #fff; }

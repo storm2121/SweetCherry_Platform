@@ -1,0 +1,214 @@
+{
+  "schema": "sweetcherry.backtest.v1",
+  "provenance": "synthetic",
+  "generatorVersion": "1.0.0",
+  "seed": 20260524,
+  "modelVersion": "lgbm-quantile-1w8w-1.0.0",
+  "dataCutoff": "2026-05-24",
+  "generatedAt": "2026-10-07T11:32:19Z",
+  "inputWorkbook": "sweetcherry_market_data_SIMULATED_seed20260524.xlsx",
+  "firstEvaluatedSeason": 2020,
+  "testSeasons": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "notice": "Computed on simulated data. A check of the code, not real-world accuracy.",
+  "metrics": {
+    "by_horizon": {
+      "1w": {
+        "n": 544,
+        "mae": 4.306,
+        "mape_pct": 11.87,
+        "pinball": 1.35,
+        "coverage_pct": 75.735,
+        "mean_width": 13.349,
+        "naive_mae": 6.747,
+        "seasonal_naive_mae": 6.369,
+        "skill_vs_naive_pct": 36.171
+      },
+      "2w": {
+        "n": 500,
+        "mae": 4.92,
+        "mape_pct": 14.164,
+        "pinball": 1.644,
+        "coverage_pct": 75.4,
+        "mean_width": 15.116,
+        "naive_mae": 10.998,
+        "seasonal_naive_mae": 8.966,
+        "skill_vs_naive_pct": 55.263
+      },
+      "3w": {
+        "n": 459,
+        "mae": 5.484,
+        "mape_pct": 15.415,
+        "pinball": 1.835,
+        "coverage_pct": 77.124,
+        "mean_width": 17.243,
+        "naive_mae": 14.432,
+        "seasonal_naive_mae": 10.275,
+        "skill_vs_naive_pct": 62.005
+      },
+      "4w": {
+        "n": 415,
+        "mae": 5.958,
+        "mape_pct": 16.341,
+        "pinball": 1.947,
+        "coverage_pct": 81.205,
+        "mean_width": 20.704,
+        "naive_mae": 17.389,
+        "seasonal_naive_mae": 11.07,
+        "skill_vs_naive_pct": 65.734
+      },
+      "5w": {
+        "n": 370,
+        "mae": 6.311,
+        "mape_pct": 16.7,
+        "pinball": 2.043,
+        "coverage_pct": 79.459,
+        "mean_width": 21.518,
+        "naive_mae": 20.02,
+        "seasonal_naive_mae": 12.42,
+        "skill_vs_naive_pct": 68.478
+      },
+      "6w": {
+        "n": 325,
+        "mae": 6.946,
+        "mape_pct": 18.672,
+        "pinball": 2.259,
+        "coverage_pct": 82.154,
+        "mean_width": 25.592,
+        "naive_mae": 22.483,
+        "seasonal_naive_mae": 14.366,
+        "skill_vs_naive_pct": 69.105
+      },
+      "7w": {
+        "n": 280,
+        "mae": 7.31,
+        "mape_pct": 18.986,
+        "pinball": 2.493,
+        "coverage_pct": 78.571,
+        "mean_width": 29.947,
+        "naive_mae": 24.4,
+        "seasonal_naive_mae": 17.28,
+        "skill_vs_naive_pct": 70.043
+      },
+      "8w": {
+        "n": 235,
+        "mae": 7.846,
+        "mape_pct": 19.131,
+        "pinball": 2.723,
+        "coverage_pct": 75.319,
+        "mean_width": 32.723,
+        "naive_mae": 26.169,
+        "seasonal_naive_mae": 20.031,
+        "skill_vs_naive_pct": 70.017
+      }
+    },
+    "by_season": {
+      "2021": {
+        "n": 636,
+        "mae": 6.158,
+        "mape_pct": 18.633,
+        "pinball": 1.951,
+        "coverage_pct": 61.164,
+        "mean_width": 14.141,
+        "naive_mae": 13.369,
+        "seasonal_naive_mae": 8.726,
+        "skill_vs_naive_pct": 53.942
+      },
+      "2022": {
+        "n": 538,
+        "mae": 5.799,
+        "mape_pct": 13.328,
+        "pinball": 2.031,
+        "coverage_pct": 97.026,
+        "mean_width": 31.399,
+        "naive_mae": 17.508,
+        "seasonal_naive_mae": 18.653,
+        "skill_vs_naive_pct": 66.878
+      },
+      "2023": {
+        "n": 644,
+        "mae": 4.688,
+        "mape_pct": 15.373,
+        "pinball": 1.519,
+        "coverage_pct": 84.317,
+        "mean_width": 19.498,
+        "naive_mae": 15.387,
+        "seasonal_naive_mae": 7.859,
+        "skill_vs_naive_pct": 69.535
+      },
+      "2024": {
+        "n": 674,
+        "mae": 4.697,
+        "mape_pct": 13.957,
+        "pinball": 1.57,
+        "coverage_pct": 82.789,
+        "mean_width": 20.11,
+        "naive_mae": 15.701,
+        "seasonal_naive_mae": 7.507,
+        "skill_vs_naive_pct": 70.082
+      },
+      "2025": {
+        "n": 636,
+        "mae": 7.947,
+        "mape_pct": 17.495,
+        "pinball": 2.618,
+        "coverage_pct": 66.981,
+        "mean_width": 18.37,
+        "naive_mae": 19.327,
+        "seasonal_naive_mae": 16.292,
+        "skill_vs_naive_pct": 58.882
+      }
+    },
+    "by_grade": {
+      "A": {
+        "n": 1119,
+        "mae": 3.84,
+        "mape_pct": 15.55,
+        "pinball": 1.292,
+        "coverage_pct": 78.642,
+        "mean_width": 14.282,
+        "naive_mae": 11.091,
+        "seasonal_naive_mae": 7.602,
+        "skill_vs_naive_pct": 65.378
+      },
+      "AA": {
+        "n": 1130,
+        "mae": 5.729,
+        "mape_pct": 15.733,
+        "pinball": 1.901,
+        "coverage_pct": 77.434,
+        "mean_width": 20.802,
+        "naive_mae": 16.541,
+        "seasonal_naive_mae": 10.926,
+        "skill_vs_naive_pct": 65.363
+      },
+      "AAA": {
+        "n": 879,
+        "mae": 8.538,
+        "mape_pct": 16.242,
+        "pinball": 2.777,
+        "coverage_pct": 77.702,
+        "mean_width": 27.523,
+        "naive_mae": 22.303,
+        "seasonal_naive_mae": 17.31,
+        "skill_vs_naive_pct": 61.719
+      }
+    },
+    "all_horizons": {
+      "n": 3128,
+      "mae": 5.843,
+      "mape_pct": 15.811,
+      "pinball": 1.929,
+      "coverage_pct": 77.941,
+      "mean_width": 20.358,
+      "naive_mae": 16.21,
+      "seasonal_naive_mae": 11.531,
+      "skill_vs_naive_pct": 63.958
+    }
+  }
+}

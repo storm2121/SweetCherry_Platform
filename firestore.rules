@@ -1,0 +1,612 @@
+rules_version = '2';
+
+// SweetCherry Firestore rules.
+//
+// These rules cover client SDK access only. Cloud Functions use the Admin SDK
+// and are not subject to them.
+//
+// Roles come from users/{uid}.role: 'farmer', 'expert' or 'admin'.
+// An expert can act only once an admin sets their status to 'approved'.
+// Tests: tests/rules (run against the emulators).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------
+    // Identity
+    // ---------------------------------------------------------------------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userPath(userId) {
+      return /databases/$(database)/documents/users/$(userId);
+    }
+
+    function hasProfile() {
+      return signedIn() && exists(userPath(request.auth.uid));
+    }
+
+    function profile() {
+      return get(userPath(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return hasProfile() && profile().role == 'admin';
+    }
+
+    function isFarmer() {
+      return hasProfile() && profile().role == 'farmer';
+    }
+
+    function isApprovedExpert() {
+      return hasProfile() && profile().role == 'expert' && profile().status == 'approved';
+    }
+
+    // Approved experts and admins work on farmer submissions.
+    function isStaff() {
+      return isApprovedExpert() || isAdmin();
+    }
+
+    // Everyone the app lets in. Pending and rejected experts are not members.
+    function isMember() {
+      return isFarmer() || isStaff();
+    }
+
+    // ---------------------------------------------------------------------
+    // Data helpers
+    // ---------------------------------------------------------------------
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function text(value, max) {
+      return value is string && value.size() <= max;
+    }
+
+    function filledText(value, max) {
+      return text(value, max) && value.size() > 0;
+    }
+
+    function optionalText(value, max) {
+      return value == null || text(value, max);
+    }
+
+    function isNow(value) {
+      return value == request.time;
+    }
+
+    function messageType(value) {
+      return value in ['text', 'image', 'audio'];
+    }
+
+    // A text message has a body and no file; a media message has an uploaded
+    // file under the given Storage prefix.
+    function validMessageBody(d, storagePrefix) {
+      return text(d.body, 2000)
+        && (d.type == 'text'
+          ? d.body.size() > 0 && d.fileUrl == null && d.filePath == null
+          : text(d.fileUrl, 2048) && d.filePath is string && d.filePath.matches(storagePrefix + '.+'));
+    }
+
+    // ---------------------------------------------------------------------
+    // Users
+    // ---------------------------------------------------------------------
+
+    // Platform settings. Only the registration switch exists; anyone may read
+    // it (the sign-up page shows whether registration is open) and only an
+    // admin may flip it.
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() && settingId == 'registration'
+        && incoming().keys().hasOnly(['open', 'updatedAt', 'updatedBy'])
+        && incoming().open is bool
+        && incoming().updatedBy == request.auth.uid
+        && incoming().updatedAt == request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if signedIn() && request.auth.uid == userId && registrationOpen() && validNewProfile(userId);
+      allow update: if adminSetsExpertStatus() || ownerEditsProfile(userId);
+      // Accounts are removed by the adminDeleteUser callable.
+      allow delete: if false;
+    }
+
+    // New accounts are accepted only while settings/registration says open.
+    // Without that document registration is closed, which is the state the
+    // platform launches in (it opens again for each new intake).
+    function registrationOpen() {
+      let setting = /databases/$(database)/documents/settings/registration;
+      return exists(setting) && get(setting).data.open == true;
+    }
+
+    // Registration writes the profile right after creating the Auth account.
+    // Farmers start approved and experts start pending. Nobody can make
+    // themselves an admin. The phone must be the one behind the Auth login
+    // (<digits>@sweetcherry.ma), so a profile cannot claim someone else's number.
+    function validNewProfile(userId) {
+      let d = incoming();
+      return d.keys().hasOnly(['uid', 'role', 'phone', 'name', 'city', 'status', 'documentUrl', 'createdAt'])
+        && d.uid == userId
+        && filledText(d.name, 120)
+        && d.phone is string && d.phone.matches('[+][0-9]{6,15}')
+        && request.auth.token.email == d.phone.replace('[+]', '') + '@sweetcherry.ma'
+        && ((d.role == 'farmer' && d.status == 'approved' && filledText(d.city, 60))
+          || (d.role == 'expert' && d.status == 'pending' && d.city == null))
+        && optionalText(d.get('documentUrl', null), 2048)
+        && d.createdAt is number;
+    }
+
+    function adminSetsExpertStatus() {
+      return isAdmin()
+        && resource.data.role == 'expert'
+        && changedKeys().hasOnly(['status'])
+        && incoming().status in ['pending', 'approved', 'rejected'];
+    }
+
+    function ownerEditsProfile(userId) {
+      return signedIn()
+        && request.auth.uid == userId
+        && changedKeys().hasOnly(['name', 'city'])
+        && filledText(incoming().name, 120)
+        && (resource.data.role == 'farmer' ? filledText(incoming().city, 60) : incoming().city == null);
+    }
+
+    // ---------------------------------------------------------------------
+    // Market price posts (shared board)
+    // ---------------------------------------------------------------------
+
+    match /pricePosts/{postId} {
+      allow read: if isMember();
+      allow create: if isFarmer() && validNewPricePost();
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.farmerId == request.auth.uid;
+    }
+
+    // market (M01–M03) and date (the day the price was seen, YYYY-MM-DD) are
+    // newer fields. Posts from older clients without them are still accepted.
+    function validNewPricePost() {
+      let d = incoming();
+      return d.keys().hasOnly([
+          'farmerId', 'farmerName', 'region', 'price', 'quality', 'imageUrl', 'createdAt', 'market', 'date'])
+        && d.farmerId == request.auth.uid
+        && d.quality in ['A', 'AA', 'AAA']
+        && validPrice(d.price)
+        && optionalText(d.farmerName, 120)
+        && optionalText(d.region, 60)
+        && optionalText(d.imageUrl, 2048)
+        && (!('market' in d) || d.market in ['M01', 'M02', 'M03'])
+        && (!('date' in d) || validObservationDate(d.date))
+        && isNow(d.createdAt);
+    }
+
+    // A real calendar day within the last year, and not after tomorrow
+    // (the extra day covers time-zone differences).
+    function validObservationDate(value) {
+      return value is string
+        && value.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && observedWithinYear(value.split('-'));
+    }
+
+    function observedWithinYear(parts) {
+      let observed = timestamp.date(int(parts[0]), int(parts[1]), int(parts[2]));
+      return observed <= request.time + duration.value(1, 'd')
+        && observed >= request.time - duration.value(370, 'd');
+    }
+
+    // MAD per kg. The price form sends the input's string value, so a
+    // numeric string is accepted as well as a number.
+    function validPrice(value) {
+      return (value is number && value > 0 && value <= 1000)
+        || (value is string
+          && value.matches('[0-9]{1,4}([.][0-9]{1,2})?')
+          && float(value) > 0
+          && float(value) <= 1000);
+    }
+
+    // ---------------------------------------------------------------------
+    // Farmers' room (community chat)
+    // ---------------------------------------------------------------------
+
+    match /farmerChat/{messageId} {
+      allow read: if isMember();
+      allow create: if isMember() && validNewChatMessage();
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.senderId == request.auth.uid;
+    }
+
+    function validNewChatMessage() {
+      let d = incoming();
+      return d.keys().hasOnly(['senderId', 'senderName', 'type', 'content', 'createdAt'])
+        && d.senderId == request.auth.uid
+        && messageType(d.type)
+        && filledText(d.content, 4000)
+        && optionalText(d.senderName, 120)
+        && isNow(d.createdAt);
+    }
+
+    // ---------------------------------------------------------------------
+    // Earlier photo and voice messages to experts (farmerMessages).
+    // Replies stay internal to experts. Farmers now ask through
+    // expertRequests below.
+    // ---------------------------------------------------------------------
+
+    match /farmerMessages/{messageId} {
+      allow read: if isStaff() || (signedIn() && resource.data.farmerId == request.auth.uid);
+      allow create: if isFarmer() && validNewFarmerMessage();
+      allow update: if isApprovedExpert() && expertTouchesInboxThread();
+      allow delete: if false;
+
+      match /replies/{replyId} {
+        allow read: if isStaff();
+        allow create: if isApprovedExpert() && validNewInternalReply();
+        allow update, delete: if false;
+      }
+    }
+
+    function validNewFarmerMessage() {
+      let d = incoming();
+      return d.keys().hasOnly([
+          'farmerId', 'farmerName', 'farmerPhone', 'farmerRegion', 'type', 'fileUrl', 'filePath',
+          'readBy', 'replyCount', 'lastReplyPreview', 'lastActivityAt', 'createdAt'])
+        && d.farmerId == request.auth.uid
+        && d.type in ['image', 'audio']
+        && text(d.fileUrl, 2048)
+        && d.filePath is string && d.filePath.matches('farmerMessages/' + request.auth.uid + '/.+')
+        && d.readBy == {}
+        && d.replyCount == 0
+        && d.lastReplyPreview == ''
+        && isNow(d.lastActivityAt)
+        && isNow(d.createdAt);
+    }
+
+    // An expert marks a thread read or records an internal reply on it. They
+    // can set only their own read receipt, and the counter goes up by one.
+    function expertTouchesInboxThread() {
+      let receipts = incoming().get('readBy', {}).diff(resource.data.get('readBy', {})).affectedKeys();
+      return changedKeys().hasOnly(['readBy', 'lastActivityAt', 'lastReplyPreview', 'replyCount'])
+        && receipts.hasOnly([request.auth.uid])
+        && optionalText(incoming().get('lastReplyPreview', null), 140)
+        && (!('replyCount' in changedKeys())
+          || incoming().replyCount == resource.data.get('replyCount', 0) + 1);
+    }
+
+    function validNewInternalReply() {
+      let d = incoming();
+      return d.keys().hasOnly(['expertId', 'expertName', 'body', 'createdAt', 'updatedAt'])
+        && d.expertId == request.auth.uid
+        && filledText(d.body, 4000)
+        && optionalText(d.expertName, 120)
+        && isNow(d.createdAt)
+        && isNow(d.updatedAt);
+    }
+
+    // ---------------------------------------------------------------------
+    // Expert guidance per region. Each expert has one current note per
+    // region, with id <regionKey>__<expertUid>.
+    // ---------------------------------------------------------------------
+
+    match /farmerNotes/{noteId} {
+      allow read: if isMember();
+      allow create, update: if isApprovedExpert() && validExpertNote(noteId);
+      allow delete: if isApprovedExpert() && resource.data.expertId == request.auth.uid;
+    }
+
+    function validExpertNote(noteId) {
+      let d = incoming();
+      let keepsCreatedAt = resource != null && resource.data.get('createdAt', null) != null;
+      return d.keys().hasOnly([
+          'scope', 'currentKey', 'region', 'subject', 'body', 'expertId', 'expertName', 'active',
+          'updatedAt', 'createdAt'])
+        && d.expertId == request.auth.uid
+        && noteId.matches('.+__' + request.auth.uid)
+        && d.scope == 'expert_region_current'
+        && d.currentKey is string && d.currentKey.matches('.+:' + request.auth.uid)
+        && filledText(d.region, 60)
+        && filledText(d.subject, 200)
+        && filledText(d.body, 5000)
+        && optionalText(d.expertName, 120)
+        && d.active == true
+        && isNow(d.updatedAt)
+        && (keepsCreatedAt ? d.createdAt == resource.data.createdAt : isNow(d.createdAt));
+    }
+
+    // ---------------------------------------------------------------------
+    // Plant photo diagnosis: farmer submits, then an expert claims and reviews.
+    // ---------------------------------------------------------------------
+
+    match /visionDiagnoses/{diagnosisId} {
+      allow read: if isStaff() || (signedIn() && resource.data.farmerId == request.auth.uid);
+      allow create: if isFarmer() && validNewDiagnosis(diagnosisId);
+      allow update: if isApprovedExpert() && validExpertReview();
+      // Removed by the adminDeleteEntry / adminDeleteUser callables.
+      allow delete: if false;
+    }
+
+    function validNewDiagnosis(diagnosisId) {
+      let d = incoming();
+      return d.keys().hasOnly([
+          'farmerId', 'farmerName', 'farmerRegion', 'farmerPhone', 'imagePath', 'imageUrl', 'status',
+          'visibleParts', 'observations', 'bodyPart', 'primaryBodyPart', 'imageQuality', 'problems',
+          'manualLabel', 'overallSeverity', 'recommendedAction', 'expertNote', 'reviewedBy',
+          'reviewedByName', 'reviewedAt', 'modelHint', 'weatherContext', 'createdAt', 'updatedAt'])
+        && d.farmerId == request.auth.uid
+        && d.imagePath == 'visionDiagnoses/' + request.auth.uid + '/' + diagnosisId + '.jpg'
+        && text(d.imageUrl, 2048)
+        && d.status == 'awaiting_expert'
+        && d.visibleParts == [] && d.observations == [] && d.problems == []
+        && d.reviewedBy == null && d.reviewedByName == null && d.reviewedAt == null
+        && d.modelHint == null && d.weatherContext == null
+        && optionalText(d.farmerName, 120)
+        && optionalText(d.farmerRegion, 60)
+        && optionalText(d.farmerPhone, 20)
+        && isNow(d.createdAt)
+        && isNow(d.updatedAt);
+    }
+
+    // Fields an expert may change. Farmer identity, the photo and
+    // function-owned fields (weatherContext, modelHint) are fixed.
+    function reviewKeys() {
+      return [
+        'status', 'reviewedBy', 'reviewedByName', 'reviewedAt', 'updatedAt', 'claimedAt',
+        'visibleParts', 'observations', 'bodyPart', 'primaryBodyPart', 'imageQuality', 'problems',
+        'manualLabel', 'overallSeverity', 'recommendedAction', 'expertNote'];
+    }
+
+    // A claim lapses 30 minutes after it was taken or last saved. Drafts saved
+    // before claims existed are treated as lapsed.
+    function claimLapsed() {
+      let claimedAt = resource.data.get('claimedAt', resource.data.get('updatedAt', null));
+      return !(claimedAt is timestamp) || claimedAt < request.time - duration.value(30, 'm');
+    }
+
+    // One expert reviews a photo at a time:
+    // - an awaiting photo, or one whose claim lapsed, can be claimed;
+    // - the expert holding the claim saves drafts, submits or rejects;
+    // - only the original reviewer can amend a finished review;
+    // - the holder can release the claim back to the queue.
+    function validExpertReview() {
+      let before = resource.data;
+      let after = incoming();
+      let holder = before.get('reviewedBy', null);
+      let heldByMe = holder == request.auth.uid;
+      let claimable = before.status == 'awaiting_expert'
+        || (before.status == 'in_review' && (heldByMe || holder == null || claimLapsed()));
+      let amending = before.status in ['reviewed', 'rejected'] && heldByMe;
+      let releasing = before.status == 'in_review' && heldByMe
+        && after.status == 'awaiting_expert'
+        && after.reviewedBy == null;
+      return changedKeys().hasOnly(reviewKeys())
+        && (releasing
+          || ((claimable || amending)
+            && after.reviewedBy == request.auth.uid
+            && after.status in ['in_review', 'reviewed', 'rejected']
+            && isNow(after.updatedAt)
+            && validReviewFields(after)));
+    }
+
+    function validReviewFields(d) {
+      return d.get('observations', []) is list && d.get('observations', []).size() <= 20
+        && d.get('problems', []) is list && d.get('problems', []).size() <= 20
+        && d.get('visibleParts', []) is list && d.get('visibleParts', []).size() <= 10
+        && optionalText(d.get('manualLabel', null), 200)
+        && optionalText(d.get('recommendedAction', null), 4000)
+        && optionalText(d.get('expertNote', null), 4000)
+        && optionalText(d.get('reviewedByName', null), 120)
+        && (d.get('imageQuality', null) == null
+          || d.imageQuality in ['good', 'blurry', 'too_far', 'bad_light', 'incomplete', 'unusable'])
+        && (d.get('overallSeverity', null) == null
+          || d.overallSeverity in ['none', 'mild', 'moderate', 'severe', 'critical'])
+        && (d.status == 'in_review' || d.reviewedAt == request.time);
+    }
+
+    // ---------------------------------------------------------------------
+    // Questions to experts. The farmer opens a request; an approved expert
+    // claims it through the claimExpertRequestAndReply callable, which
+    // creates the conversation. Both participants then write messages.
+    // ---------------------------------------------------------------------
+
+    match /expertRequests/{requestId} {
+      allow read: if isStaff() || (signedIn() && resource.data.farmerId == request.auth.uid);
+      allow create: if isFarmer() && validNewExpertRequest();
+      allow update: if farmerCancelsOpenRequest();
+      allow delete: if false;
+    }
+
+    function validNewExpertRequest() {
+      let d = incoming();
+      return d.keys().hasOnly([
+          'farmerId', 'farmerName', 'farmerPhone', 'farmerRegion', 'type', 'body', 'fileUrl',
+          'filePath', 'status', 'createdAt', 'updatedAt'])
+        && d.farmerId == request.auth.uid
+        && d.status == 'open'
+        && messageType(d.type)
+        && validMessageBody(d, 'expertRequests/' + request.auth.uid + '/')
+        && optionalText(d.farmerName, 120)
+        && optionalText(d.farmerPhone, 20)
+        && optionalText(d.farmerRegion, 60)
+        && isNow(d.createdAt)
+        && isNow(d.updatedAt);
+    }
+
+    function farmerCancelsOpenRequest() {
+      return signedIn()
+        && resource.data.farmerId == request.auth.uid
+        && resource.data.status == 'open'
+        && changedKeys().hasOnly(['status', 'updatedAt'])
+        && incoming().status == 'cancelled'
+        && isNow(incoming().updatedAt);
+    }
+
+    match /expertConversations/{conversationId} {
+      allow read: if isAdmin() || isParticipant(resource.data);
+      // Created by claimExpertRequestAndReply; deleted by admin callables.
+      allow create, delete: if false;
+      allow update: if isParticipant(resource.data) && validConversationTouch();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin() || isParticipant(conversation(conversationId));
+        allow create: if validNewConversationMessage(conversationId);
+        allow update, delete: if false;
+      }
+    }
+
+    function conversation(conversationId) {
+      return get(/databases/$(database)/documents/expertConversations/$(conversationId)).data;
+    }
+
+    function isParticipant(c) {
+      return signedIn() && (c.farmerId == request.auth.uid || c.expertId == request.auth.uid);
+    }
+
+    // A participant either marks the conversation read, or records the
+    // message they just sent (preview, sender, and the other side's unread flag).
+    function validConversationTouch() {
+      let d = incoming();
+      let farmer = resource.data.farmerId == request.auth.uid;
+      let readKeys = farmer ? ['unreadForFarmer', 'farmerReadAt'] : ['unreadForExpert', 'expertReadAt'];
+      let othersReadAt = farmer ? 'expertReadAt' : 'farmerReadAt';
+      let markRead = changedKeys().hasOnly(readKeys)
+        && (farmer
+          ? d.unreadForFarmer == false && d.farmerReadAt == request.time
+          : d.unreadForExpert == false && d.expertReadAt == request.time);
+      let sent = changedKeys().hasOnly([
+            'lastMessagePreview', 'lastMessageSenderId', 'lastMessageSenderRole', 'updatedAt',
+            'unreadForFarmer', 'unreadForExpert', readKeys[1]])
+        && !(othersReadAt in changedKeys())
+        && d.lastMessageSenderId == request.auth.uid
+        && d.lastMessageSenderRole == (farmer ? 'farmer' : 'expert')
+        && text(d.lastMessagePreview, 160)
+        && d.updatedAt == request.time
+        && (farmer
+          ? d.unreadForExpert == true && d.unreadForFarmer == false
+          : d.unreadForFarmer == true && d.unreadForExpert == false);
+      return markRead || sent;
+    }
+
+    function validNewConversationMessage(conversationId) {
+      let c = conversation(conversationId);
+      let d = incoming();
+      let farmer = c.farmerId == request.auth.uid;
+      return isParticipant(c)
+        && (farmer || isApprovedExpert())
+        && c.get('status', 'active') == 'active'
+        && d.keys().hasOnly([
+            'conversationId', 'senderId', 'senderName', 'senderRole', 'type', 'body', 'fileUrl',
+            'filePath', 'createdAt'])
+        && d.conversationId == conversationId
+        && d.senderId == request.auth.uid
+        && d.senderRole == (farmer ? 'farmer' : 'expert')
+        && messageType(d.type)
+        && validMessageBody(d, 'expertConversations/' + conversationId + '/' + request.auth.uid + '/')
+        && optionalText(d.senderName, 120)
+        && isNow(d.createdAt);
+    }
+
+    // ---------------------------------------------------------------------
+    // Regional and market data written by Cloud Functions
+    // ---------------------------------------------------------------------
+
+    match /aiNotes/{regionId} {
+      allow read: if isMember();
+      allow write: if false;
+    }
+
+    // Imported P10/P50/P90 price ranges, one document per grade. They hold no
+    // personal data and the public landing page may show them. Admins import
+    // them; extra metadata fields (source, issue date, model version) are
+    // allowed beside the required ones.
+    match /forecastSheets/{grade} {
+      allow read: if true;
+      allow write: if isAdmin() && validForecastSheet(grade);
+    }
+
+    function validForecastSheet(grade) {
+      let d = incoming();
+      return grade in ['A', 'AA', 'AAA']
+        && d.keys().hasAll(['rows', 'updatedAt', 'uploadedBy', 'rowCount'])
+        && d.keys().size() <= 20
+        && d.rows is list && d.rows.size() <= 5000
+        && d.rowCount == d.rows.size()
+        && d.uploadedBy == request.auth.uid
+        && isNow(d.updatedAt);
+    }
+
+    // ---------------------------------------------------------------------
+    // Hydroponics device module. Device ids are device_<ownerUid>; readings
+    // and alerts are written by Cloud Functions.
+    // ---------------------------------------------------------------------
+
+    function ownsDevice(deviceId) {
+      return signedIn() && deviceId == 'device_' + request.auth.uid;
+    }
+
+    match /hydroDevices/{deviceId} {
+      allow get: if ownsDevice(deviceId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if ownsDevice(deviceId)
+        && incoming().keys().hasOnly(['ownerId', 'deviceName', 'createdAt', 'connected'])
+        && incoming().ownerId == request.auth.uid
+        && filledText(incoming().deviceName, 60)
+        && incoming().connected == false
+        && incoming().createdAt is number;
+      allow update: if ownsDevice(deviceId)
+        && changedKeys().hasOnly(['pumpCommand', 'pumpCommandAt'])
+        && incoming().pumpCommand is bool
+        && incoming().pumpCommandAt is number
+        && incoming().pumpCommandAt > request.time.toMillis() - 300000
+        && incoming().pumpCommandAt < request.time.toMillis() + 300000;
+      allow delete: if false;
+    }
+
+    match /hydroReadings/{deviceId} {
+      allow get: if ownsDevice(deviceId) || isAdmin();
+      allow list, write: if false;
+    }
+
+    match /hydroAlerts/{alertId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.deviceId == 'device_' + request.auth.uid);
+      allow update: if signedIn()
+        && resource.data.deviceId == 'device_' + request.auth.uid
+        && changedKeys().hasOnly(['status'])
+        && incoming().status == 'resolved';
+      allow create, delete: if false;
+    }
+
+    // ---------------------------------------------------------------------
+    // Image model data and versions (admin only)
+    // ---------------------------------------------------------------------
+
+    match /datasetImages/{imageId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /modelTrainingJobs/{jobId} {
+      allow read, write: if isAdmin();
+
+      match /manifestItems/{itemId} {
+        allow read, write: if isAdmin();
+      }
+    }
+
+    match /modelCandidates/{candidateId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /modelRegistry/{entryId} {
+      allow read: if isMember();
+      allow write: if isAdmin();
+    }
+
+    // Everything else (climate snapshots and summaries, daily weather cache,
+    // system metadata, AI note locks) is reached only through Cloud
+    // Functions and stays closed to clients.
+  }
+}

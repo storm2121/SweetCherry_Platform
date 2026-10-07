@@ -1,0 +1,781 @@
+{
+  "schema": "sweetcherry.forecastSheets.v1",
+  "about": {
+    "provenance": "synthetic",
+    "dataCutoff": "2026-05-24",
+    "generatedAt": "2026-10-07T11:32:19Z",
+    "modelVersion": "lgbm-quantile-1w8w-1.0.0",
+    "sourceName": "Synthetic market simulation",
+    "seed": "20260524",
+    "generatorVersion": "1.0.0",
+    "notice": "SIMULATED DATA: these prices come from a simulation, not from real markets. The backtest figures check the code on simulated data; they are not real-world accuracy.",
+    "snapshot": "Fixed demonstration snapshot with data up to 2026-05-24; not current market data.",
+    "units": "MAD/kg, wholesale",
+    "horizons": "1w to 8w after the cutoff week (short_term)",
+    "markets": "M01 Casablanca; M02 Rabat; M03 Marrakech",
+    "inputWorkbook": "sweetcherry_market_data_SIMULATED_seed20260524.xlsx",
+    "rowCounts": "A 24, AA 24, AAA 24",
+    "calibration": "P10-P90 widened per horizon to cover 80% of out-of-sample simulated weeks, seasons 2020 to 2025 (conformal)",
+    "backtest": "Rolling-season backtest on simulated seasons 2021 to 2025; each season predicted by models trained only on earlier seasons",
+    "forecastNote": "Forecasts for the weeks starting 2026-05-25 to 2026-07-13, made with data up to 2026-05-24."
+  },
+  "backtest": {
+    "byHorizon": {
+      "1w": {
+        "n": 544,
+        "mae": 4.306,
+        "mape_pct": 11.87,
+        "pinball": 1.35,
+        "coverage_pct": 75.735,
+        "mean_width": 13.349,
+        "naive_mae": 6.747,
+        "seasonal_naive_mae": 6.369,
+        "skill_vs_naive_pct": 36.171
+      },
+      "2w": {
+        "n": 500,
+        "mae": 4.92,
+        "mape_pct": 14.164,
+        "pinball": 1.644,
+        "coverage_pct": 75.4,
+        "mean_width": 15.116,
+        "naive_mae": 10.998,
+        "seasonal_naive_mae": 8.966,
+        "skill_vs_naive_pct": 55.263
+      },
+      "3w": {
+        "n": 459,
+        "mae": 5.484,
+        "mape_pct": 15.415,
+        "pinball": 1.835,
+        "coverage_pct": 77.124,
+        "mean_width": 17.243,
+        "naive_mae": 14.432,
+        "seasonal_naive_mae": 10.275,
+        "skill_vs_naive_pct": 62.005
+      },
+      "4w": {
+        "n": 415,
+        "mae": 5.958,
+        "mape_pct": 16.341,
+        "pinball": 1.947,
+        "coverage_pct": 81.205,
+        "mean_width": 20.704,
+        "naive_mae": 17.389,
+        "seasonal_naive_mae": 11.07,
+        "skill_vs_naive_pct": 65.734
+      },
+      "5w": {
+        "n": 370,
+        "mae": 6.311,
+        "mape_pct": 16.7,
+        "pinball": 2.043,
+        "coverage_pct": 79.459,
+        "mean_width": 21.518,
+        "naive_mae": 20.02,
+        "seasonal_naive_mae": 12.42,
+        "skill_vs_naive_pct": 68.478
+      },
+      "6w": {
+        "n": 325,
+        "mae": 6.946,
+        "mape_pct": 18.672,
+        "pinball": 2.259,
+        "coverage_pct": 82.154,
+        "mean_width": 25.592,
+        "naive_mae": 22.483,
+        "seasonal_naive_mae": 14.366,
+        "skill_vs_naive_pct": 69.105
+      },
+      "7w": {
+        "n": 280,
+        "mae": 7.31,
+        "mape_pct": 18.986,
+        "pinball": 2.493,
+        "coverage_pct": 78.571,
+        "mean_width": 29.947,
+        "naive_mae": 24.4,
+        "seasonal_naive_mae": 17.28,
+        "skill_vs_naive_pct": 70.043
+      },
+      "8w": {
+        "n": 235,
+        "mae": 7.846,
+        "mape_pct": 19.131,
+        "pinball": 2.723,
+        "coverage_pct": 75.319,
+        "mean_width": 32.723,
+        "naive_mae": 26.169,
+        "seasonal_naive_mae": 20.031,
+        "skill_vs_naive_pct": 70.017
+      }
+    },
+    "allHorizons": {
+      "n": 3128,
+      "mae": 5.843,
+      "mape_pct": 15.811,
+      "pinball": 1.929,
+      "coverage_pct": 77.941,
+      "mean_width": 20.358,
+      "naive_mae": 16.21,
+      "seasonal_naive_mae": 11.531,
+      "skill_vs_naive_pct": 63.958
+    }
+  },
+  "grades": {
+    "A": [
+      {
+        "date": "2026-05-25",
+        "market": "M01",
+        "low": 9.74,
+        "expected": 11.97,
+        "high": 13.38,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M01",
+        "low": 9.26,
+        "expected": 11.58,
+        "high": 13.22,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M01",
+        "low": 8.76,
+        "expected": 11.53,
+        "high": 13.46,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M01",
+        "low": 9.11,
+        "expected": 12.1,
+        "high": 14.17,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M01",
+        "low": 9.11,
+        "expected": 12.37,
+        "high": 14.53,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M01",
+        "low": 9.02,
+        "expected": 14.01,
+        "high": 17.84,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M01",
+        "low": 10.72,
+        "expected": 17.19,
+        "high": 22.29,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M01",
+        "low": 11.23,
+        "expected": 19.53,
+        "high": 28.19,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      },
+      {
+        "date": "2026-05-25",
+        "market": "M02",
+        "low": 10.12,
+        "expected": 12.14,
+        "high": 14.87,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M02",
+        "low": 9.78,
+        "expected": 12.01,
+        "high": 15.21,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M02",
+        "low": 9.56,
+        "expected": 11.92,
+        "high": 15.47,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M02",
+        "low": 9.82,
+        "expected": 12.67,
+        "high": 16.7,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M02",
+        "low": 9.83,
+        "expected": 13.13,
+        "high": 17.8,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M02",
+        "low": 10.38,
+        "expected": 14.49,
+        "high": 22.0,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M02",
+        "low": 13.75,
+        "expected": 19.8,
+        "high": 26.03,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M02",
+        "low": 14.64,
+        "expected": 24.09,
+        "high": 36.08,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      },
+      {
+        "date": "2026-05-25",
+        "market": "M03",
+        "low": 9.87,
+        "expected": 12.15,
+        "high": 13.59,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M03",
+        "low": 9.38,
+        "expected": 11.62,
+        "high": 13.51,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M03",
+        "low": 9.04,
+        "expected": 11.69,
+        "high": 13.48,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M03",
+        "low": 9.26,
+        "expected": 12.28,
+        "high": 14.51,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M03",
+        "low": 9.23,
+        "expected": 12.74,
+        "high": 15.15,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M03",
+        "low": 9.33,
+        "expected": 14.73,
+        "high": 18.18,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M03",
+        "low": 11.19,
+        "expected": 17.58,
+        "high": 24.09,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M03",
+        "low": 12.18,
+        "expected": 22.43,
+        "high": 28.64,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      }
+    ],
+    "AA": [
+      {
+        "date": "2026-05-25",
+        "market": "M01",
+        "low": 13.8,
+        "expected": 16.59,
+        "high": 18.64,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M01",
+        "low": 13.13,
+        "expected": 16.03,
+        "high": 18.47,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M01",
+        "low": 12.48,
+        "expected": 16.13,
+        "high": 18.66,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M01",
+        "low": 12.89,
+        "expected": 16.74,
+        "high": 19.78,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M01",
+        "low": 12.91,
+        "expected": 17.22,
+        "high": 20.28,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M01",
+        "low": 13.07,
+        "expected": 19.48,
+        "high": 24.75,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M01",
+        "low": 15.89,
+        "expected": 24.17,
+        "high": 31.67,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M01",
+        "low": 16.55,
+        "expected": 27.89,
+        "high": 39.46,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      },
+      {
+        "date": "2026-05-25",
+        "market": "M02",
+        "low": 15.02,
+        "expected": 17.99,
+        "high": 21.72,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M02",
+        "low": 14.44,
+        "expected": 17.84,
+        "high": 22.22,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M02",
+        "low": 14.12,
+        "expected": 17.62,
+        "high": 22.61,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M02",
+        "low": 14.59,
+        "expected": 18.77,
+        "high": 24.25,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M02",
+        "low": 14.67,
+        "expected": 19.59,
+        "high": 25.96,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M02",
+        "low": 15.61,
+        "expected": 21.4,
+        "high": 31.92,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M02",
+        "low": 21.34,
+        "expected": 29.45,
+        "high": 38.38,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M02",
+        "low": 22.72,
+        "expected": 36.38,
+        "high": 52.94,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      },
+      {
+        "date": "2026-05-25",
+        "market": "M03",
+        "low": 14.25,
+        "expected": 17.2,
+        "high": 18.97,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M03",
+        "low": 13.53,
+        "expected": 16.35,
+        "high": 18.93,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M03",
+        "low": 13.04,
+        "expected": 16.45,
+        "high": 18.92,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M03",
+        "low": 13.42,
+        "expected": 17.28,
+        "high": 20.5,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M03",
+        "low": 13.39,
+        "expected": 18.03,
+        "high": 21.34,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M03",
+        "low": 13.67,
+        "expected": 20.75,
+        "high": 25.73,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M03",
+        "low": 17.4,
+        "expected": 25.84,
+        "high": 34.85,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M03",
+        "low": 18.0,
+        "expected": 32.89,
+        "high": 43.27,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      }
+    ],
+    "AAA": [
+      {
+        "date": "2026-05-25",
+        "market": "M01",
+        "low": 19.86,
+        "expected": 23.96,
+        "high": 26.42,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M01",
+        "low": 18.88,
+        "expected": 23.03,
+        "high": 26.53,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M01",
+        "low": 18.09,
+        "expected": 22.98,
+        "high": 26.7,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M01",
+        "low": 18.67,
+        "expected": 24.17,
+        "high": 28.31,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M01",
+        "low": 18.8,
+        "expected": 24.98,
+        "high": 29.39,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M01",
+        "low": 19.89,
+        "expected": 29.26,
+        "high": 36.08,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M01",
+        "low": 24.02,
+        "expected": 36.17,
+        "high": 50.46,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M01",
+        "low": 25.12,
+        "expected": 45.0,
+        "high": 62.8,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      },
+      {
+        "date": "2026-05-25",
+        "market": "M02",
+        "low": 21.17,
+        "expected": 25.06,
+        "high": 30.71,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M02",
+        "low": 20.39,
+        "expected": 24.66,
+        "high": 31.18,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M02",
+        "low": 19.98,
+        "expected": 24.56,
+        "high": 31.72,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M02",
+        "low": 20.66,
+        "expected": 26.14,
+        "high": 34.16,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M02",
+        "low": 20.97,
+        "expected": 27.62,
+        "high": 36.81,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M02",
+        "low": 23.08,
+        "expected": 31.02,
+        "high": 45.31,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M02",
+        "low": 31.13,
+        "expected": 45.39,
+        "high": 56.14,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M02",
+        "low": 33.59,
+        "expected": 55.04,
+        "high": 80.47,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      },
+      {
+        "date": "2026-05-25",
+        "market": "M03",
+        "low": 20.26,
+        "expected": 23.58,
+        "high": 26.38,
+        "horizonType": "short_term",
+        "horizon": "1w"
+      },
+      {
+        "date": "2026-06-01",
+        "market": "M03",
+        "low": 19.29,
+        "expected": 22.41,
+        "high": 26.23,
+        "horizonType": "short_term",
+        "horizon": "2w"
+      },
+      {
+        "date": "2026-06-08",
+        "market": "M03",
+        "low": 18.61,
+        "expected": 22.56,
+        "high": 26.38,
+        "horizonType": "short_term",
+        "horizon": "3w"
+      },
+      {
+        "date": "2026-06-15",
+        "market": "M03",
+        "low": 19.25,
+        "expected": 23.72,
+        "high": 28.5,
+        "horizonType": "short_term",
+        "horizon": "4w"
+      },
+      {
+        "date": "2026-06-22",
+        "market": "M03",
+        "low": 19.37,
+        "expected": 24.93,
+        "high": 30.13,
+        "horizonType": "short_term",
+        "horizon": "5w"
+      },
+      {
+        "date": "2026-06-29",
+        "market": "M03",
+        "low": 20.28,
+        "expected": 29.87,
+        "high": 35.91,
+        "horizonType": "short_term",
+        "horizon": "6w"
+      },
+      {
+        "date": "2026-07-06",
+        "market": "M03",
+        "low": 25.46,
+        "expected": 36.4,
+        "high": 53.85,
+        "horizonType": "short_term",
+        "horizon": "7w"
+      },
+      {
+        "date": "2026-07-13",
+        "market": "M03",
+        "low": 26.05,
+        "expected": 48.32,
+        "high": 64.07,
+        "horizonType": "short_term",
+        "horizon": "8w"
+      }
+    ]
+  }
+}

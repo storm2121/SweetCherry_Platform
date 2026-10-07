@@ -1,0 +1,23 @@
+{
+  "name": "sweetcherry-rules-tests",
+  "private": true,
+  "type": "module",
+  "description": "Firestore and Storage security rules tests, run against the Firebase emulators.",
+  "scripts": {
+    "test": "firebase emulators:exec --config ../../firebase.rules-test.json --only firestore,storage --project demo-sweetcherry \"node --test --test-concurrency=1\"",
+    "posttest": "node stop-orphan-emulator.mjs",
+    "seed": "node seed-demo.mjs",
+    "stop-emulator": "node stop-orphan-emulator.mjs"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^12.5.0",
+    "firebase-admin": "^14.5.0"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.5",
+    "gaxios": {
+      "uuid": "^11.1.1"
+    }
+  }
+}
