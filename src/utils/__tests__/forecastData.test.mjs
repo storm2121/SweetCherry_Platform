@@ -99,12 +99,14 @@ test('upload timestamps handle supported Firestore and ordinary representations'
 });
 
 
+// The instant is in the past on purpose: Morocco was on UTC+1 in October 2024
+// in every time-zone database, whereas future offsets change with updates.
 test('timestamp observations use Moroccan dates and do not replace corrupt explicit dates', () => {
   const indexed = indexPriceObservations([
-    { quality: 'A', market: 'M01', createdAt: Date.parse('2026-10-11T23:30:00Z'), price: 25 },
-    { quality: 'A', market: 'M01', date: 'invalid', createdAt: Date.parse('2026-10-11T23:30:00Z'), price: 29 },
+    { quality: 'A', market: 'M01', createdAt: Date.parse('2024-10-11T23:30:00Z'), price: 25 },
+    { quality: 'A', market: 'M01', date: 'invalid', createdAt: Date.parse('2024-10-11T23:30:00Z'), price: 29 },
   ], 'A');
-  assert.equal(indexed.observations.get(observationKey('M01', '2026-10-12')).length, 1);
+  assert.equal(indexed.observations.get(observationKey('M01', '2024-10-12')).length, 1);
   assert.equal(indexed.unscopedCount, 1);
 });
 

@@ -27,8 +27,10 @@ test('uses seven completed Moroccan local days, excluding the current day', () =
   assert.equal(summary.rainfall7d, 168);
   assert.equal(summary.chillHours, 168);
   assert.equal(summary.seasonalChillHours, null);
-  const afterLocalMidnight = completedSevenDayWindow(new Date('2026-10-03T23:30:00Z'));
-  assert.equal(afterLocalMidnight.endDate, '2026-10-03');
+  // A past instant: Morocco was on UTC+1 in October 2024 in every time-zone
+  // database, whereas future offsets change with updates.
+  const afterLocalMidnight = completedSevenDayWindow(new Date('2024-10-03T23:30:00Z'));
+  assert.equal(afterLocalMidnight.endDate, '2024-10-03');
 });
 
 test('rejects missing dates and null values instead of treating them as zero rainfall/chill', () => {

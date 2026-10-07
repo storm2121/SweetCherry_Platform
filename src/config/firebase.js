@@ -6,19 +6,22 @@ import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 
 // The clean project defaults to isolated local emulators. A real project is opt-in.
 const useEmulators = import.meta.env.VITE_USE_EMULATORS !== 'false';
-const setting = (name, demoValue) => {
-  const value = import.meta.env[name]?.trim();
-  if (value) return value;
+// Each variable is read by its full name so that Vite inlines only these
+// values: import.meta.env[name] would copy every VITE_ variable, secrets
+// included, into the public bundle.
+const setting = (name, value, demoValue) => {
+  const trimmed = value?.trim();
+  if (trimmed) return trimmed;
   if (useEmulators) return demoValue;
   throw new Error(`Missing ${name}. Configure your Firebase project in .env.`);
 };
 const firebaseConfig = {
-  apiKey: setting('VITE_FIREBASE_API_KEY', 'demo-api-key'),
-  authDomain: setting('VITE_FIREBASE_AUTH_DOMAIN', 'localhost'),
-  projectId: setting('VITE_FIREBASE_PROJECT_ID', 'demo-sweetcherry'),
-  storageBucket: setting('VITE_FIREBASE_STORAGE_BUCKET', 'demo-sweetcherry.appspot.com'),
-  messagingSenderId: setting('VITE_FIREBASE_MESSAGING_SENDER_ID', '0'),
-  appId: setting('VITE_FIREBASE_APP_ID', 'demo-app'),
+  apiKey: setting('VITE_FIREBASE_API_KEY', import.meta.env.VITE_FIREBASE_API_KEY, 'demo-api-key'),
+  authDomain: setting('VITE_FIREBASE_AUTH_DOMAIN', import.meta.env.VITE_FIREBASE_AUTH_DOMAIN, 'localhost'),
+  projectId: setting('VITE_FIREBASE_PROJECT_ID', import.meta.env.VITE_FIREBASE_PROJECT_ID, 'demo-sweetcherry'),
+  storageBucket: setting('VITE_FIREBASE_STORAGE_BUCKET', import.meta.env.VITE_FIREBASE_STORAGE_BUCKET, 'demo-sweetcherry.appspot.com'),
+  messagingSenderId: setting('VITE_FIREBASE_MESSAGING_SENDER_ID', import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID, '0'),
+  appId: setting('VITE_FIREBASE_APP_ID', import.meta.env.VITE_FIREBASE_APP_ID, 'demo-app'),
 };
 if (useEmulators && !firebaseConfig.projectId.startsWith('demo-')) {
   throw new Error('Emulator mode requires a demo- project ID.');
